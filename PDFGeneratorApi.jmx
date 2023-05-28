@@ -31,6 +31,63 @@
           <boolProp name="TransactionController.parent">false</boolProp>
         </TransactionController>
         <hashTree>
+          <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="jswtToken" enabled="true">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="jwtToken" elementType="Argument">
+                <stringProp name="Argument.name">jwtToken</stringProp>
+                <stringProp name="Argument.value">eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlMWFhYWI4YTc2ZjMzYzU0ZTFhMGVhOTNiMWU4OGIxZjE4NmQzOWYzMDIxNDcxYjVjNmM4NjM4ODA5NjZlNTg3Iiwic3ViIjoiZHRvbnltb3JlbGxvOTEwMEBnbWFpbC5jb20iLCJleHAiOjE2ODUyOTg0NjB9.XFllLnK5SmNWlQFoiu5ESlY4bw_jFR-TstDWdYDa1Dc</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </Arguments>
+          <hashTree/>
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="jwtToken" enabled="false">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
+// Define the payload values
+def issuer = &quot;e1aaab8a76f33c54e1a0ea93b1e88b1f186d39f3021471b5c6c863880966e587&quot;
+def subject = &quot;dtonymorello9100@gmail.com&quot;
+def expirationDurationMinutes = 15 // Set the expiration duration in minutes
+
+// Calculate the expiration time
+def expirationTime = Instant.now().plus(expirationDurationMinutes, ChronoUnit.MINUTES).getEpochSecond()
+
+// Generate the bearer token
+def bearerToken = Jwts.builder()
+    .setIssuer(issuer)
+    .setSubject(subject)
+    .setExpiration(new Date(expirationTime * 1000))
+    .signWith(SignatureAlgorithm.HS256, &quot;f18761906029632a9ded1a2d93211187b8ed20ce2aad2e680cf954686e3fd0bd&quot;) // Replace &quot;your-secret-key&quot; with your actual secret key
+    .compact()
+
+// Use the bearer token in your test script
+log.info(&quot;Generated Bearer Token: $bearerToken&quot;)
+
+// Update the value of the &quot;jwtToken&quot; variable
+vars.put(&quot;jwtToken&quot;, &quot;Bearer &quot; + bearerToken)
+</stringProp>
+          </JSR223PreProcessor>
+          <hashTree/>
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="JSR223 PreProcessor" enabled="false">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">// Get the bearer token from the variable
+def jwtToken = vars.get(&quot;jwtToken&quot;)
+
+// Set the Authorization header with the bearer token
+sampler.addHeader(&quot;Authorization&quot;, &quot;Bearer &quot; + jwtToken)
+</stringProp>
+          </JSR223PreProcessor>
+          <hashTree/>
           <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="getTemplates" enabled="true">
             <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
               <collectionProp name="Arguments.arguments">
@@ -58,15 +115,6 @@
             <stringProp name="HTTPSampler.response_timeout"></stringProp>
           </HTTPSamplerProxy>
           <hashTree>
-            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="AuthorizationJWT" enabled="true">
-              <collectionProp name="HeaderManager.headers">
-                <elementProp name="" elementType="Header">
-                  <stringProp name="Header.name">Authorization</stringProp>
-                  <stringProp name="Header.value">Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlMWFhYWI4YTc2ZjMzYzU0ZTFhMGVhOTNiMWU4OGIxZjE4NmQzOWYzMDIxNDcxYjVjNmM4NjM4ODA5NjZlNTg3Iiwic3ViIjoiZHRvbnltb3JlbGxvOTEwMEBnbWFpbC5jb20iLCJleHAiOjE2ODUyOTQ1Mzd9.iAQZf5pszbS0QfHQItAlom5d-kQvNcW1Ck2cfAU7Ggo</stringProp>
-                </elementProp>
-              </collectionProp>
-            </HeaderManager>
-            <hashTree/>
             <JSONPathAssertion guiclass="JSONPathAssertionGui" testclass="JSONPathAssertion" testname="JSON Assertion" enabled="true">
               <stringProp name="JSON_PATH">$.meta</stringProp>
               <stringProp name="EXPECTED_VALUE"></stringProp>
@@ -75,6 +123,15 @@
               <boolProp name="INVERT">false</boolProp>
               <boolProp name="ISREGEX">true</boolProp>
             </JSONPathAssertion>
+            <hashTree/>
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="jwtToken" enabled="true">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">Authorization</stringProp>
+                  <stringProp name="Header.value">Bearer ${jwtToken}</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
             <hashTree/>
           </hashTree>
           <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="postCopyTemplate" enabled="true">
@@ -123,16 +180,16 @@
               <intProp name="Assertion.test_type">16</intProp>
             </ResponseAssertion>
             <hashTree/>
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="jwtToken" enabled="true">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">Authorization</stringProp>
+                  <stringProp name="Header.value">Bearer ${jwtToken}</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
+            <hashTree/>
           </hashTree>
-          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="AuthorizationJWT" enabled="true">
-            <collectionProp name="HeaderManager.headers">
-              <elementProp name="" elementType="Header">
-                <stringProp name="Header.name">Authorization</stringProp>
-                <stringProp name="Header.value">Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlMWFhYWI4YTc2ZjMzYzU0ZTFhMGVhOTNiMWU4OGIxZjE4NmQzOWYzMDIxNDcxYjVjNmM4NjM4ODA5NjZlNTg3Iiwic3ViIjoiZHRvbnltb3JlbGxvOTEwMEBnbWFpbC5jb20iLCJleHAiOjE2ODUyOTQ1Mzd9.iAQZf5pszbS0QfHQItAlom5d-kQvNcW1Ck2cfAU7Ggo</stringProp>
-              </elementProp>
-            </collectionProp>
-          </HeaderManager>
-          <hashTree/>
           <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="getSingleTemplate" enabled="true">
             <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
               <collectionProp name="Arguments.arguments">
@@ -180,16 +237,16 @@
               <intProp name="Assertion.test_type">16</intProp>
             </ResponseAssertion>
             <hashTree/>
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="jwtToken" enabled="true">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">Authorization</stringProp>
+                  <stringProp name="Header.value">Bearer ${jwtToken}</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
+            <hashTree/>
           </hashTree>
-          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="AuthorizationJWT" enabled="true">
-            <collectionProp name="HeaderManager.headers">
-              <elementProp name="" elementType="Header">
-                <stringProp name="Header.name">Authorization</stringProp>
-                <stringProp name="Header.value">Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlMWFhYWI4YTc2ZjMzYzU0ZTFhMGVhOTNiMWU4OGIxZjE4NmQzOWYzMDIxNDcxYjVjNmM4NjM4ODA5NjZlNTg3Iiwic3ViIjoiZHRvbnltb3JlbGxvOTEwMEBnbWFpbC5jb20iLCJleHAiOjE2ODUyOTQ1Mzd9.iAQZf5pszbS0QfHQItAlom5d-kQvNcW1Ck2cfAU7Ggo</stringProp>
-              </elementProp>
-            </collectionProp>
-          </HeaderManager>
-          <hashTree/>
           <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
             <boolProp name="LoopController.continue_forever">true</boolProp>
             <stringProp name="LoopController.loops">1</stringProp>
@@ -222,15 +279,6 @@
               <stringProp name="HTTPSampler.response_timeout"></stringProp>
             </HTTPSamplerProxy>
             <hashTree>
-              <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="AuthorizationJWT" enabled="true">
-                <collectionProp name="HeaderManager.headers">
-                  <elementProp name="" elementType="Header">
-                    <stringProp name="Header.name">Authorization</stringProp>
-                    <stringProp name="Header.value">Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJlMWFhYWI4YTc2ZjMzYzU0ZTFhMGVhOTNiMWU4OGIxZjE4NmQzOWYzMDIxNDcxYjVjNmM4NjM4ODA5NjZlNTg3Iiwic3ViIjoiZHRvbnltb3JlbGxvOTEwMEBnbWFpbC5jb20iLCJleHAiOjE2ODUyOTQ1Mzd9.iAQZf5pszbS0QfHQItAlom5d-kQvNcW1Ck2cfAU7Ggo</stringProp>
-                  </elementProp>
-                </collectionProp>
-              </HeaderManager>
-              <hashTree/>
               <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="JSR223 PreProcessor" enabled="true">
                 <stringProp name="cacheKey">true</stringProp>
                 <stringProp name="filename"></stringProp>
@@ -241,16 +289,25 @@ vars.put(&quot;templateCounter&quot;, templateCounter.toString())
                 <stringProp name="scriptLanguage">groovy</stringProp>
               </JSR223PreProcessor>
               <hashTree/>
+              <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="jwtToken" enabled="true">
+                <collectionProp name="HeaderManager.headers">
+                  <elementProp name="" elementType="Header">
+                    <stringProp name="Header.name">Authorization</stringProp>
+                    <stringProp name="Header.value">Bearer ${jwtToken}</stringProp>
+                  </elementProp>
+                </collectionProp>
+              </HeaderManager>
+              <hashTree/>
+              <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="templateCounter" enabled="true">
+                <stringProp name="CounterConfig.start">4</stringProp>
+                <stringProp name="CounterConfig.end">22</stringProp>
+                <stringProp name="CounterConfig.incr">1</stringProp>
+                <stringProp name="CounterConfig.name"></stringProp>
+                <stringProp name="CounterConfig.format"></stringProp>
+                <boolProp name="CounterConfig.per_user">true</boolProp>
+              </CounterConfig>
+              <hashTree/>
             </hashTree>
-            <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="templateCounter" enabled="true">
-              <stringProp name="CounterConfig.start">4</stringProp>
-              <stringProp name="CounterConfig.end">22</stringProp>
-              <stringProp name="CounterConfig.incr">1</stringProp>
-              <stringProp name="CounterConfig.name"></stringProp>
-              <stringProp name="CounterConfig.format"></stringProp>
-              <boolProp name="CounterConfig.per_user">true</boolProp>
-            </CounterConfig>
-            <hashTree/>
           </hashTree>
         </hashTree>
         <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
